@@ -367,7 +367,16 @@ void CMFCApplication2Dlg::OnBnClickedwordanalyze()
 	// TODO: 在此添加控件通知处理程序代码
 	scanner();
 	int size = tokenList.size();
-	GetDlgItem(IDC_SouceCode)->SetWindowTextW(int2CString(size));
+	CString TOKEN;
+	//GetDlgItem(IDC_SouceCode)->SetWindowTextW(int2CString(size));
+	for (auto val : tokenList) {
+		if (val->val != "") {
+			TOKEN += int2CString(val->linenum);
+			TOKEN += val->val;
+			TOKEN += _T("\r\n");
+		}
+	}
+	GetDlgItem(IDC_SouceCode)->SetWindowTextW(TOKEN);
 }
 
 
@@ -417,7 +426,6 @@ set<char> CMFCApplication2Dlg::e_closure(set<char> T, Traid G[], int N)
 	}
 	return U;
 }
-
 set<char> CMFCApplication2Dlg::move(set<char> I, char a, Traid G[], int N)
 {
 	set<char> U;
@@ -530,34 +538,57 @@ void CMFCApplication2Dlg::scanner()
 		int currentState = 0;//当前状态
 		CString currentToken;//当前的token值
 		Token *token;
-		while (currentpos<length) {
+		while (currentpos<=length) {
 			char currentchar = val.GetAt(currentpos);
 			if (currentchar==' ') {
 				currentpos++;
-				token=new Token();
+
+				/*token=new Token();
 				token->linenum = linenum;
 				token->val = currentToken;
-				tokenList.push_back(token);
+				tokenList.push_back(token);*/
+				addToTokenList(linenum,currentToken);
+
 				currentToken.Empty();
 				currentState = 0;
 			}
 			else {
-				currentToken.AppendChar(currentchar);
 				int nextState = getNextState(currentState,currentchar);
+				currentToken.AppendChar(currentchar);
 				currentpos++;
 				if (nextState == -1) {
+					//currentpos -= 1;
+					/*currentpos--;
+					currentToken.Left(currentToken.GetLength()-1);*/
 					if (currentState==0) {
 						currentToken = currentToken + _T(",error");
+
+						/*token = new Token();
+						token->linenum = linenum;
+						token->val = currentToken;
+						tokenList.push_back(token);*/
+						addToTokenList(linenum, currentToken);
+
+						currentToken.Empty();
+						currentState = 0;
+						continue;
 					}
-					token = new Token();
+					
+					currentToken=currentToken.Left(currentToken.GetLength() - 1);
+					currentpos -= 1;
+
+					/*token = new Token();
 					token->linenum = linenum;
 					token->val = currentToken;
-					tokenList.push_back(token);
+					tokenList.push_back(token);*/
+					addToTokenList(linenum, currentToken);
+
 					currentToken.Empty();
 					currentState = 0;
 				}
 				else {
-					if (state[nextState]==1) {
+					currentState = nextState;
+					/*if (state[nextState]==1) {
 						token = new Token();
 						token->linenum = linenum;
 						token->val = currentToken;
@@ -567,11 +598,20 @@ void CMFCApplication2Dlg::scanner()
 					}
 					else {
 						currentState = nextState;
-					}
+
+					}*/
 				}
 			}
 		}
 	}
+}
+
+void CMFCApplication2Dlg::addToTokenList(int linenum, CString currentToken)
+{
+	Token *token = new Token();
+	token->linenum = linenum;
+	token->val = currentToken;
+	tokenList.push_back(token);
 }
 
 

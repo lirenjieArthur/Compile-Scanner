@@ -64,7 +64,7 @@ public:
 	void determined(Traid[], int, char*, int);
 	int getNextState(int start, char edge);
 	void scanner();
-
+	void addToTokenList(int linenum,CString token);
 
 	afx_msg void OnBnClickedSelectLEX();
 	afx_msg void OnEnChangeLexFileName();
