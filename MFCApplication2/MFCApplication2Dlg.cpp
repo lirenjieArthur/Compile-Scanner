@@ -370,14 +370,25 @@ void CMFCApplication2Dlg::OnBnClickedwordanalyze()
 	int size = tokenList.size();
 	CString TOKEN;
 	//GetDlgItem(IDC_SouceCode)->SetWindowTextW(int2CString(size));
-	for (auto val : tokenList) {
+	/*for (auto val : tokenList) {
 		if (val->val != "") {
 			TOKEN += int2CString(val->linenum);
 			TOKEN += val->val;
+			TOKEN += val->type;
 			TOKEN += _T("\r\n");
 		}
 	}
-	GetDlgItem(IDC_SouceCode)->SetWindowTextW(TOKEN);
+	GetDlgItem(IDC_SouceCode)->SetWindowTextW(TOKEN);*/
+	for (auto val : tokenList) {
+		/*resultlist.InsertItem(0,int2CString( val->linenum ));
+		resultlist.InsertItem(1,val->val);
+		resultlist.InsertItem(2,val->type); */
+		if (val->val != "") {
+			resultlist.InsertItem(0, int2CString(val->linenum));
+			resultlist.SetItemText(0, 1, val->type);
+			resultlist.SetItemText(0, 2, val->val);
+		}
+	}
 }
 
 
@@ -603,6 +614,46 @@ void CMFCApplication2Dlg::scanner()
 					}*/
 				}
 			}
+		}
+	}
+
+	//判断token类型
+	for (auto eachtoken : tokenList) {
+		CString token = eachtoken->val;
+		if (token.Find(_T("error")) == -1) {
+			if (ReserveWords.count(token) == 0) {
+				//不是保留字
+				if (Delimiter.count(token) == 0) {
+					//不是界符
+					if (OperationSymbol.count(token) == 0) {
+						//不是运算符
+						if (token.GetAt(0)<='9' && token.GetAt(0)>='0' ) {
+							//以数字开头，则为常量
+							eachtoken->type = constnum;
+						}
+						else {
+							//不以数字开头，则为标识符
+							eachtoken->type = ID;
+						}
+					}
+					else {
+						//是运算符
+						eachtoken->type = operators;
+					}
+				}
+				else {
+					//是界符
+					eachtoken->type = delimiter;
+				}
+			}
+			else {
+				//是保留字
+				eachtoken->type = reserve;
+			}
+		}
+		else {
+			eachtoken->val = eachtoken->val.Left(token.Find(_T("error"))-1);
+			eachtoken->type = error;
 		}
 	}
 }
