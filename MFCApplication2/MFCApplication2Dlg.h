@@ -51,12 +51,7 @@ public:
 	};
 	vector<Traid2> DFA;
 	map<int, int> state;//是否是终态,1表示终态
-	struct Token {
-		CString val;
-		CString type;
-		int linenum;
-	};
-	vector<Token*> tokenList;//存储词法分析得到的token串
+	
 
 	CString int2CString(int i);
 	set<char> e_closure(set<char>, Traid[], int);

@@ -6,6 +6,7 @@
 #include "MFCApplication2.h"
 #include "MFCApplication2Dlg.h"
 #include "afxdialogex.h"
+#include "util.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -613,8 +614,6 @@ void CMFCApplication2Dlg::addToTokenList(int linenum, CString currentToken)
 	token->val = currentToken;
 	tokenList.push_back(token);
 }
-
-
 
 
 
