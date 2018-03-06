@@ -366,9 +366,13 @@ void CMFCApplication2Dlg::OnEnChangeFilename()
 void CMFCApplication2Dlg::OnBnClickedwordanalyze()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	if (!tokenList.empty()) {
+		return;
+	}
 	scanner();
 	int size = tokenList.size();
-	CString TOKEN;
+	reverse(tokenList.begin(),tokenList.end());
+	//CString TOKEN;
 	//GetDlgItem(IDC_SouceCode)->SetWindowTextW(int2CString(size));
 	/*for (auto val : tokenList) {
 		if (val->val != "") {
@@ -380,9 +384,6 @@ void CMFCApplication2Dlg::OnBnClickedwordanalyze()
 	}
 	GetDlgItem(IDC_SouceCode)->SetWindowTextW(TOKEN);*/
 	for (auto val : tokenList) {
-		/*resultlist.InsertItem(0,int2CString( val->linenum ));
-		resultlist.InsertItem(1,val->val);
-		resultlist.InsertItem(2,val->type); */
 		if (val->val != "") {
 			resultlist.InsertItem(0, int2CString(val->linenum));
 			resultlist.SetItemText(0, 1, val->type);
@@ -555,14 +556,10 @@ void CMFCApplication2Dlg::scanner()
 			if (currentchar==' ') {
 				currentpos++;
 
-				/*token=new Token();
-				token->linenum = linenum;
-				token->val = currentToken;
-				tokenList.push_back(token);*/
-				addToTokenList(linenum,currentToken);
+				addToTokenList(linenum,&currentToken,&currentState);
 
-				currentToken.Empty();
-				currentState = 0;
+				/*currentToken.Empty();
+				currentState = 0;*/
 			}
 			else {
 				int nextState = getNextState(currentState,currentchar);
@@ -575,30 +572,39 @@ void CMFCApplication2Dlg::scanner()
 					if (currentState==0) {
 						currentToken = currentToken + _T(",error");
 
-						/*token = new Token();
-						token->linenum = linenum;
-						token->val = currentToken;
-						tokenList.push_back(token);*/
-						addToTokenList(linenum, currentToken);
+						addToTokenList(linenum, &currentToken, &currentState);
 
-						currentToken.Empty();
-						currentState = 0;
+						/*currentToken.Empty();
+						currentState = 0;*/
 						continue;
 					}
 					
+
 					currentToken=currentToken.Left(currentToken.GetLength() - 1);
 					currentpos -= 1;
 
-					/*token = new Token();
-					token->linenum = linenum;
-					token->val = currentToken;
-					tokenList.push_back(token);*/
-					addToTokenList(linenum, currentToken);
+					addToTokenList(linenum, &currentToken, &currentState);
 
-					currentToken.Empty();
-					currentState = 0;
+					/*currentToken.Empty();
+					currentState = 0;*/
 				}
 				else {
+					//处理字符串常量
+					if (currentToken == "\"") {
+						while (currentpos <= length ) {
+							currentchar = val.GetAt(currentpos);
+							currentToken.AppendChar(currentchar);
+							currentpos++;
+							if (currentchar == '\"') {
+								break;
+							}
+						}
+						addToTokenList(linenum, &currentToken, &currentState);
+
+						/*currentToken.Empty();
+						currentState = 0;*/
+						continue;
+					}
 					currentState = nextState;
 					/*if (state[nextState]==1) {
 						token = new Token();
@@ -627,13 +633,29 @@ void CMFCApplication2Dlg::scanner()
 					//不是界符
 					if (OperationSymbol.count(token) == 0) {
 						//不是运算符
-						if (token.GetAt(0)<='9' && token.GetAt(0)>='0' ) {
-							//以数字开头，则为常量
-							eachtoken->type = constnum;
+						if ((token.GetAt(0)<='9' && token.GetAt(0)>='0') || token.GetAt(0) == '.') {
+							//以数字或小数点开头，则为常量。若有e，则e后必须有+/-和数字。
+							if (token.Find(_T("e")) != -1) {
+								if (token.GetAt(token.GetLength()-1) >= '0' && token.GetAt(token.GetLength()-1) <= '9')
+									eachtoken->type = constnum;
+								else
+									eachtoken->type = error;
+							}
+							else {
+								eachtoken->type = constnum;
+							}
 						}
 						else {
-							//不以数字开头，则为标识符
-							eachtoken->type = ID;
+							//不以数字,小数点开头，则为标识符或字符常量
+							if (token.GetAt(0)=='\"') {
+								if(token.GetAt(token.GetLength()-1) == '\"')
+									eachtoken->type = constnum;
+								else
+									eachtoken->type = error;
+							}
+							else {
+								eachtoken->type = ID;
+							}
 						}
 					}
 					else {
@@ -658,14 +680,32 @@ void CMFCApplication2Dlg::scanner()
 	}
 }
 
-void CMFCApplication2Dlg::addToTokenList(int linenum, CString currentToken)
+void CMFCApplication2Dlg::addToTokenList(int linenum, CString *currentToken,int *currentstate)
 {
 	Token *token = new Token();
 	token->linenum = linenum;
-	token->val = currentToken;
+	token->val = *currentToken;
 	tokenList.push_back(token);
+	(*currentToken).Empty();
+	(*currentstate) = 0;
+	int a = 1e1;
 }
 
-
+/*int main() {
+	int a = 0;
+	int b, b1;
+	int c = a + b;
+	double d = 1e-3;
+	++ + ;
+	float f = "qw qwdf";
+	in f;
+	if (a >= 0 && d != 0) {
+		a += a & 1;
+	}
+###
+}
+int main() {
+	float f = "qw qwdf";
+}*/
 
 

@@ -36,7 +36,7 @@ protected:
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 public:
-	const static int MAX_NODES = 50;
+	const static int MAX_NODES = 100;
 	struct Traid
 	{
 		char start;
@@ -59,7 +59,7 @@ public:
 	void determined(Traid[], int, char*, int);
 	int getNextState(int start, char edge);
 	void scanner();
-	void addToTokenList(int linenum,CString token);
+	void addToTokenList(int linenum, CString *currentToken, int *currentstate);
 
 	afx_msg void OnBnClickedSelectLEX();
 	afx_msg void OnEnChangeLexFileName();
