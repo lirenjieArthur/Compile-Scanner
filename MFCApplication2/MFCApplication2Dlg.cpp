@@ -7,6 +7,7 @@
 #include "MFCApplication2Dlg.h"
 #include "afxdialogex.h"
 #include "util.h"
+#include "ParserAnalyzeDlg.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -72,6 +73,7 @@ BEGIN_MESSAGE_MAP(CMFCApplication2Dlg, CDialogEx)
 	ON_BN_CLICKED(IDC_wordAnalyze, &CMFCApplication2Dlg::OnBnClickedwordanalyze)
 	ON_NOTIFY(LVN_ITEMCHANGED, IDC_LIST2, &CMFCApplication2Dlg::OnLvnItemchangedList2)
 	ON_EN_CHANGE(IDC_SouceCode, &CMFCApplication2Dlg::OnEnChangeSoucecode)
+	ON_BN_CLICKED(IDC_ParserAnalyze, &CMFCApplication2Dlg::OnBnClickedParserAnalyze)
 END_MESSAGE_MAP()
 
 
@@ -390,6 +392,7 @@ void CMFCApplication2Dlg::OnBnClickedwordanalyze()
 			resultlist.SetItemText(0, 2, val->val);
 		}
 	}
+	reverse(tokenList.begin(), tokenList.end());
 }
 
 
@@ -691,21 +694,30 @@ void CMFCApplication2Dlg::addToTokenList(int linenum, CString *currentToken,int 
 	int a = 1e1;
 }
 
+
+void CMFCApplication2Dlg::OnBnClickedParserAnalyze()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	ParserAnalyzeDlg newDlg;
+	newDlg.DoModal();
+}
+
+
 /*int main() {
-	int a = 0;
-	int b, b1;
-	int c = a + b;
-	double d = 1e-3;
-	++ + ;
-	float f = "qw qwdf";
-	in f;
-	if (a >= 0 && d != 0) {
-		a += a & 1;
-	}
+int a = 0;
+int b, b1;
+int c = a + b;
+double d = 1e-3;
+++ + ;
+float f = "qw qwdf";
+in f;
+if (a >= 0 && d != 0) {
+a += a & 1;
+}
 ###
 }
 int main() {
-	float f = "qw qwdf";
+float f = "qw qwdf";
 }*/
 
 

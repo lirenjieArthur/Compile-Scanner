@@ -67,8 +67,9 @@ public:
 	afx_msg void OnEnChangeFilename();
 	afx_msg void OnBnClickedwordanalyze();
 	afx_msg void OnLvnItemchangedList2(NMHDR *pNMHDR, LRESULT *pResult);
-	CListCtrl resultlist;
 	afx_msg void OnEnChangeSoucecode();
+	afx_msg void OnBnClickedParserAnalyze();
+	CListCtrl resultlist;
 	
 
 	CString FilePath;
@@ -76,5 +77,6 @@ public:
 	CString lexFilePath;
 	CStdioFile lexFile;
 	vector<CString> fileLines;//存放源代码的每一行
+	
 	
 };
