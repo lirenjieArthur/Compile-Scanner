@@ -12,7 +12,7 @@
 #define new DEBUG_NEW
 #endif
 
-
+vector<Token*> tokenList;
 // 用于应用程序“关于”菜单项的 CAboutDlg 对话框
 
 class CAboutDlg : public CDialogEx
@@ -391,6 +391,9 @@ void CMFCApplication2Dlg::OnBnClickedwordanalyze()
 			resultlist.SetItemText(0, 1, val->type);
 			resultlist.SetItemText(0, 2, val->val);
 		}
+		else {
+			
+		}
 	}
 	reverse(tokenList.begin(), tokenList.end());
 }
@@ -472,13 +475,6 @@ void CMFCApplication2Dlg::determined(Traid G[], int N, char* input, int n)
 	while (!C[i].empty() && marked[i] == false && i<MAX_NODES)//C中存在尚未被标记的子集T 
 	{
 		marked[i] = true;//标记T 
-		/*
-		set<char>::iterator it;
-		cout<<i<<":"
-		for(it=C[i].begin();it!=C[i].end();it++)
-		cout<<*it<<",";
-		cout<<endl;
-		 */
 		for (int j = 0; j<n; j++){
 			if (input[j] != '*'){
 				set<char> U = e_closure(move(C[i], input[j], G, N), G, N);
@@ -509,7 +505,6 @@ void CMFCApplication2Dlg::determined(Traid G[], int N, char* input, int n)
 					DFA.push_back(each);
 					state[i] = 0;
 					state[k] = 0;
-					//cout << i << "->" << input[j] << " " << k << endl;//i起点 k终点 input[j]边
 				}
 			}
 		}
@@ -685,6 +680,8 @@ void CMFCApplication2Dlg::scanner()
 
 void CMFCApplication2Dlg::addToTokenList(int linenum, CString *currentToken,int *currentstate)
 {
+	if (*currentToken == _T(""))
+		return;
 	Token *token = new Token();
 	token->linenum = linenum;
 	token->val = *currentToken;
@@ -714,10 +711,14 @@ in f;
 if (a >= 0 && d != 0) {
 a += a & 1;
 }
-###
 }
 int main() {
 float f = "qw qwdf";
 }*/
-
+/*int main() {
+	int a = 0;
+	while (a) {
+		a = a + 1;
+	}
+}*/
 

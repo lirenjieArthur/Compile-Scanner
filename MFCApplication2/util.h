@@ -5,7 +5,7 @@ struct Token {
 	CString type;
 	int linenum;
 };
-static vector<Token*> tokenList;//存储词法分析得到的token串
+extern vector<Token*> tokenList;//存储词法分析得到的token串
 #define reserve _T("保留字")
 #define ID _T("标识符")
 #define constnum _T("常量")

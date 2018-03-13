@@ -65,6 +65,12 @@ public:
 
 	vector<map<char,int>> LR1Table;//数组下标为LR1分析表的行，map为列和值，int负数表示用相应的产生式规约，正数表示转移到相应状态
 
+	bool is_done = false;//语法分析是否完成
+	bool is_error;//语法错误
+	int state;
+	int strIndex;
+	bool is_conflict = false;//判断项目集是否有冲突
+
 	CString lexFilePath;
 	CStdioFile lexFile;
 
@@ -76,4 +82,6 @@ public:
 	int is_existed();
 	void get_LR1Table();
 	bool LR1Analyze(CString string);
+	CString tokenListToString();
+	void is_Conflict(int setNum, char ch);
 };

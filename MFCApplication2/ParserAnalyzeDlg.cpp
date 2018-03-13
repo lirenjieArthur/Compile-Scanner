@@ -123,14 +123,19 @@ void ParserAnalyzeDlg::OnEnChangeEdit1()
 		lexFile.Abort();
 		e->Delete();
 	}
-	get_VNfirst();
+	get_VNfirst();//checked
 	createProjSet();
 	get_LR1Table();
-	bool isdone = LR1Analyze(_T("i+i*i#"));
-	int q=LR1Table.size();
-	int i = projectSet.size();
-	int j = transTable.size();
+	is_conflict;
 	
+	int k = tokenList.size();
+	CString str = tokenListToString();
+	bool isdone = LR1Analyze(str);
+	is_done;
+	is_error;
+	
+	int q=state;
+	int i = strIndex;
 }
 
 void ParserAnalyzeDlg::get_VNfirst()
@@ -163,7 +168,7 @@ void ParserAnalyzeDlg::get_VNfirst()
 				}
 			} while (flag2 && t < grammar[i].GetLength());
 			if (t == grammar[i].GetLength()) {
-				firstOfVN[grammar[i].GetAt(t)].insert('@');
+				firstOfVN[grammar[i].GetAt(0)].insert('@');
 			}
 		}
 	} while (flag1);
@@ -210,11 +215,20 @@ set<char> ParserAnalyzeDlg::get_expchar(Item item)
 		}
 		else if (grammar[item.grammar_numb].GetAt(temp + 1) >= 'A' && grammar[item.grammar_numb].GetAt(temp + 1) <= 'Z') {
 			for (auto each : firstOfVN[grammar[item.grammar_numb].GetAt(temp + 1)]) {
-				expchar.insert(each);
-				if (firstOfVN[grammar[item.grammar_numb].GetAt(temp + 1)].count('@')) {
+				//expchar.insert(each);
+				/*if (firstOfVN[grammar[item.grammar_numb].GetAt(temp + 1)].count('@')) {
 					temp++;
 					flag == true;
+				}*/
+				//2018.3.13,向前搜索符不为@
+				if (each != '@') {
+					expchar.insert(each);
 				}
+				else {
+					temp++;
+					flag = true;
+				}
+				//
 			}
 		}
 	} while (flag);
@@ -287,6 +301,10 @@ void ParserAnalyzeDlg::createProjSet()
 		}
 		//go所有终结符
 		for (auto eachVT : VT) {
+			//@只走一次
+			if (eachVT == '@') {
+				continue;
+			}
 			Item temp;
 			set<Item> buf;
 			for (auto eachItem : projectSet[num]) {
@@ -359,6 +377,9 @@ void ParserAnalyzeDlg::get_LR1Table()
 	LR1Table.resize(setCount+1);
 	//根据transTable，获得要移进的项
 	for (int i = 0; i < transTable.size();i++) {
+		if (transTable[i].path == '@') {
+			continue;
+		}
 		int setNum = transTable[i].begin;
 		int next = transTable[i].end;
 		char ch = transTable[i].path;
@@ -367,11 +388,22 @@ void ParserAnalyzeDlg::get_LR1Table()
 	//遍历每个项目集，寻找能规约的项
 	for (int i = 0; i <= setCount;i++) {
 		for (auto eachItem : projectSet[i]) {
-			if (eachItem.part == grammar[eachItem.grammar_numb].GetLength()) {
+			//2018.3.13，TODO:判断移进规约冲突，在insert之前判断向前搜索符是否在移进项中
+			/*if (grammar[eachItem.grammar_numb].Find('@') >= 0) {
 				int setNum = i;
 				int next = eachItem.grammar_numb*(-1);
 				char ch = eachItem.expchar;
 				LR1Table[setNum].insert(pair<char, int>(ch, next));
+
+			}*/
+			if (eachItem.part == grammar[eachItem.grammar_numb].GetLength() ||
+				grammar[eachItem.grammar_numb].Find('@') >= 0) {
+				int setNum = i;
+				int next = eachItem.grammar_numb*(-1);
+				char ch = eachItem.expchar;
+				is_Conflict(setNum, ch);//判断是否冲突
+				LR1Table[setNum].insert(pair<char, int>(ch, next));
+				
 			}
 		}
 	}
@@ -383,13 +415,11 @@ bool ParserAnalyzeDlg::LR1Analyze(CString string)
 	stack<pair<int,char>> s;
 	int init_state = 0;
 	char init_char = '#';
-	int strIndex = 0;
-	bool is_done = false;
-	bool is_error;
+	strIndex = 0;
 	s.push(pair<int, char>(init_state, init_char));
 	
 	do {
-		int state = s.top().first;
+		state = s.top().first;
 		is_error = true;
 		for (auto each : LR1Table[state]) {//对当前项目集的所有移进规约项
 			if (each.first == string.GetAt(strIndex)) {
@@ -405,17 +435,72 @@ bool ParserAnalyzeDlg::LR1Analyze(CString string)
 				}
 				else {//规约,出栈
 					int grammarNum = each.second*(-1);
-					for (int i = 0; i < grammar[grammarNum].GetLength() - 3;i++) {
-						s.pop();
+					if (grammar[grammarNum].GetAt(3) == '@') {
+						//遇到空规约时，栈不pop
+						string.Insert(strIndex, grammar[grammarNum].GetAt(0));
 					}
-					strIndex--;
-					string.SetAt(strIndex, grammar[grammarNum].GetAt(0));
+					else {
+						for (int i = 0; i < grammar[grammarNum].GetLength() - 3; i++) {
+							s.pop();
+						}
+						strIndex--;
+						string.SetAt(strIndex, grammar[grammarNum].GetAt(0));
+					}
 					break;
 				}
 			}
 		}
 	} while ( !is_done && !is_error);
 	return is_done | is_error;
+}
+
+CString ParserAnalyzeDlg::tokenListToString()
+{
+	CString str;
+	for (int i = 0; i < tokenList.size();i++) {
+		if (tokenList[i]->type == reserve) {
+			if (tokenList[i]->val == _T("int")|| tokenList[i]->val == _T("float") || tokenList[i]->val == _T("double") || tokenList[i]->val == _T("bool")) {
+				str += _T("1");
+			}
+			else if (tokenList[i]->val == _T("void")) {
+				str += _T("2");
+			}
+			else if (tokenList[i]->val == _T("while")) {
+				str += _T("6");
+			}
+			else if (tokenList[i]->val == _T("if")) {
+				str += _T("7");
+			}
+			else if (tokenList[i]->val == _T("else")) {
+				str += _T("8");
+			}
+			else {
+				str += _T("@");
+			}
+		}
+		else if (tokenList[i]->type == ID) {
+			str += _T("3");
+		}
+		else if (tokenList[i]->type == constnum) {
+			str += _T("4");
+		}
+		else{
+			if (tokenList[i]->val.GetLength() == 1) {
+				str += tokenList[i]->val;
+			}
+			else {
+				str += _T("@");
+			}
+		}
+	}
+	return str+_T("#");
+}
+
+void ParserAnalyzeDlg::is_Conflict(int setNum, char ch)
+{
+	if (LR1Table[setNum].count(ch) != 0) {
+		is_conflict = true;
+	}
 }
 
 
